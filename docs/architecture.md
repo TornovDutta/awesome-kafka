@@ -1,37 +1,30 @@
-# Apache Kafka Architecture
+# Awesome Kafka (Mini Kafka) Architecture
 
-Apache Kafka is a distributed event streaming platform capable of handling trillions of events a day. It provides a unified, high-throughput, low-latency platform for handling real-time data feeds.
+Awesome Kafka is a lightweight, in-memory event broker designed as a Spring Boot Starter. It simulates the core concepts of publish/subscribe messaging without the need for external infrastructure like ZooKeeper, KRaft, or a real Kafka cluster.
 
-## Core Concepts
+## Architecture
 
-### 1. Topics and Partitions
-- **Topics**: A topic is a category or feed name to which records are published. Topics in Kafka are always multi-subscriber.
-- **Partitions**: Topics are broken down into a number of partitions. Partitions allow you to parallelize a topic by splitting the data in a particular topic across multiple brokers. Each partition is an ordered, immutable sequence of records that is continually appended to.
+The project is built around a few core components that handle message routing, asynchronous processing, and seamless Spring Boot integration:
 
-### 2. Brokers and Clusters
-- **Broker**: A Kafka cluster consists of one or more servers (Kafka brokers). A broker receives messages from producers, assigns offsets to them, and commits the messages to storage on disk. It also services consumers, responding to fetch requests for partitions and responding with the messages that have been committed to disk.
-- **Cluster**: A group of brokers working together is called a Kafka cluster.
+### 1. MiniKafkaBroker
+The `MiniKafkaBroker` is the central hub of the system. It maintains an in-memory registry mapping topics to their respective subscribers using a thread-safe `ConcurrentHashMap`. When a message is published, the broker routes it to all subscribed listeners. 
 
-### 3. Producers
-Producers are client applications that publish (write) events to Kafka. Producers can choose which partition to write to, either by specifying a partition key or using a round-robin approach.
+To ensure non-blocking operations, it utilizes an `ExecutorService` (a cached thread pool) to deliver messages asynchronously to each subscriber.
 
-### 4. Consumers and Consumer Groups
-- **Consumers**: Consumers are client applications that subscribe to (read and process) events.
-- **Consumer Groups**: Consumers are logically grouped into consumer groups. Each partition in a topic is consumed by exactly one consumer within a consumer group, ensuring that each message is processed only once per group.
+### 2. MiniKafkaTemplate
+`MiniKafkaTemplate` provides a simple, high-level API for producing messages. Modeled after Spring's `KafkaTemplate`, developers can inject this class into their services and use the `send(topic, message)` method to publish events seamlessly.
 
-### 5. ZooKeeper / KRaft
-- **ZooKeeper**: Historically, Kafka used Apache ZooKeeper to manage cluster metadata, coordinate broker elections, and store consumer offsets (in older versions).
-- **KRaft (Kafka Raft)**: In newer versions, Kafka has transitioned to using a self-managed metadata quorum (KRaft) to replace ZooKeeper, simplifying deployment and improving scalability.
+### 3. @MiniKafkaListener
+Consumers are defined using the `@MiniKafkaListener` annotation. By annotating a method within a Spring Bean and specifying a topic, the method becomes an event subscriber. 
 
-## Data Flow Architecture
+Under the hood, a custom `BeanPostProcessor` (`MiniKafkaListenerAnnotationBeanPostProcessor`) scans the application context during startup, identifies these annotated methods, and registers them as listeners directly with the `MiniKafkaBroker`.
 
-1. **Publishing**: The Producer sends records to a Kafka topic.
-2. **Storage**: The Kafka Broker receives the records, appends them to a partition log, and stores them on disk for a configurable retention period.
-3. **Consuming**: The Consumer polls the Kafka Broker for new records from the subscribed topics.
-4. **Offset Management**: The Consumer tracks its position in the partition log using offsets, allowing it to resume consumption from where it left off in case of failure or restart.
+## Features
 
-## High Availability and Replication
+Awesome Kafka currently provides the following features out-of-the-box:
 
-Kafka provides high availability through replication. Each partition has one "leader" broker and zero or more "follower" brokers.
-- The leader handles all read and write requests for the partition.
-- Followers passively replicate the leader's data. If the leader fails, one of the in-sync followers will automatically become the new leader.
+- **Zero Infrastructure Required**: An entirely in-memory broker that removes the need to install or manage an actual Kafka cluster.
+- **Asynchronous Processing**: Messages are delivered and processed asynchronously using a cached thread pool, ensuring that publishers are not blocked by slow consumers.
+- **Spring Boot Auto-Configuration**: Automatically configures and wires up the broker, template, and listener post-processor. Just include the dependency, and it works immediately without any manual configuration.
+- **Thread-Safe Routing**: Safely handles concurrent publishing and subscribing using `ConcurrentHashMap` and `CopyOnWriteArrayList`.
+- **Familiar API**: Provides an API structure (`MiniKafkaTemplate` and `@MiniKafkaListener`) that closely mirrors actual Spring Kafka, making it an excellent tool for local development, testing, or lightweight event-driven applications.
