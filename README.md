@@ -6,6 +6,8 @@ A lightweight, in-memory event broker that simulates Kafka's core concepts (publ
 
 This project is built as a **Spring Boot Starter**. Other users can include it in their project and start using it immediately. **Zero configuration required!**
 
+![Awesome Kafka Design](docs/design.png)
+
 ## How to Install (Public Access)
 
 You can easily include this dependency in any Spring Boot application using [JitPack](https://jitpack.io/?utm_source=chatgpt.com#TornovDutta/awesome-kafka/v1.0.0).
