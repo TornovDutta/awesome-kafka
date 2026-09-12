@@ -1,29 +1,48 @@
-# Mini Kafka Spring Boot Starter
+# Awesome Kafka (Mini Kafka Spring Boot Starter)
+
+[![](https://jitpack.io/v/TornovDutta/awesome-kafka.svg)](https://jitpack.io/#TornovDutta/awesome-kafka)
 
 A lightweight, in-memory event broker that simulates Kafka's core concepts (publish/subscribe to topics) without requiring any external infrastructure. 
 
-This project is built as a **Spring Boot Starter**. Other users can include it in their `pom.xml` and start using it immediately without any extra configuration.
+This project is built as a **Spring Boot Starter**. Other users can include it in their project and start using it immediately. **Zero configuration required!**
+
+## How to Install (Public Access)
+
+You can easily include this dependency in any Spring Boot application using [JitPack](https://jitpack.io/?utm_source=chatgpt.com#TornovDutta/awesome-kafka/v1.0.0).
+
+### 1. Add the JitPack Repository
+First, add the JitPack repository to your target project's `pom.xml`:
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+
+### 2. Add the Dependency
+Next, add the `awesome-kafka` dependency:
+
+```xml
+<dependency>
+    <groupId>com.github.TornovDutta</groupId>
+    <artifactId>awesome-kafka</artifactId>
+    <version>v1.0.0</version>
+</dependency>
+```
+
+---
 
 ## Features
 - **In-memory Broker:** No need to install or configure Zookeeper or a Kafka cluster.
 - **Asynchronous Processing:** Messages are handled asynchronously by a cached thread pool.
 - **Spring Boot Auto-configuration:** Automatically configures the broker, template, and listeners.
 
-## How to Use
+## Usage Guide
 
-### 1. Add Dependency
-Include this starter project in your target Spring Boot application's `pom.xml`:
-
-```xml
-<dependency>
-    <groupId>com.minikafka</groupId>
-    <artifactId>mini-kafka-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-*(Make sure to run `mvn clean install` on this library first to install it in your local `.m2` repository).*
-
-### 2. Produce Messages
+### 1. Produce Messages
 Inject `MiniKafkaTemplate` into your services to send messages to a specific topic.
 
 ```java
@@ -47,7 +66,7 @@ public class OrderService {
 }
 ```
 
-### 3. Consume Messages
+### 2. Consume Messages
 Use the `@MiniKafkaListener` annotation on any method within a Spring Bean to listen to a topic.
 
 ```java
@@ -65,4 +84,4 @@ public class NotificationService {
 }
 ```
 
-That's it! When `OrderService` sends a message, `NotificationService` will receive it asynchronously.
+That's it! When `OrderService` sends a message, `NotificationService` will receive it asynchronously without any further setup required.
