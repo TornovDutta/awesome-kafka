@@ -1,28 +1,60 @@
 package com.minikafka.core;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MiniKafkaBroker {
-    private final Map<String, List<MessageListener>> listeners = new ConcurrentHashMap<>();
+    // Map to hold persistent topic logs rather than in-memory listeners
+    private final Map<String, TopicLog> topics = new ConcurrentHashMap<>();
+    
+    // Thread pool to handle consumer polling
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
+    private TopicLog getTopic(String topicName) {
+        return topics.computeIfAbsent(topicName, TopicLog::new);
+    }
+
     public void publish(String topic, Object message) {
-        List<MessageListener> topicListeners = listeners.get(topic);
-        if (topicListeners != null) {
-            for (MessageListener listener : topicListeners) {
-                // Deliver messages asynchronously
-                executorService.submit(() -> listener.onMessage(message));
-            }
-        }
+        // Append message to the persistent log file on disk
+        getTopic(topic).append(message);
     }
 
     public void subscribe(String topic, MessageListener listener) {
-        listeners.computeIfAbsent(topic, k -> new CopyOnWriteArrayList<>()).add(listener);
+        TopicLog topicLog = getTopic(topic);
+        
+        // Start a dedicated polling thread for this consumer
+        executorService.submit(() -> {
+            long currentOffset = 0; // Starts from the beginning of the log (offset 0)
+            
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    // Try to read a message at the current byte offset
+                    MessageRecord record = topicLog.read(currentOffset);
+                    
+                    if (record != null) {
+                        // Message found: Deliver it and advance the offset
+                        listener.onMessage(record.message);
+                        currentOffset = record.nextOffset;
+                    } else {
+                        // Reached end of file: wait 100ms before polling again
+                        Thread.sleep(100); 
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (Exception e) {
+                    System.err.println("Error reading from topic " + topic + ": " + e.getMessage());
+                    try { 
+                        Thread.sleep(1000); 
+                    } catch (InterruptedException ie) { 
+                        Thread.currentThread().interrupt(); 
+                        break; 
+                    }
+                }
+            }
+        });
     }
 
     public interface MessageListener {
