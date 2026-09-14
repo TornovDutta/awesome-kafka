@@ -38,8 +38,9 @@ Next, add the `awesome-kafka` dependency:
 ---
 
 ## Features
-- **In-memory Broker:** No need to install or configure Zookeeper or a Kafka cluster.
-- **Asynchronous Processing:** Messages are handled asynchronously by a cached thread pool.
+- **Persistent Disk Logs:** Messages are stored in append-only log files (`minikafka-data/`) for durability, surviving application restarts.
+- **Offsets & Replayability:** Consumers track their byte offsets and read from the log, allowing them to replay historical messages.
+- **Asynchronous Polling:** Dedicated background threads continuously poll for new messages decoupled from the producer.
 - **Spring Boot Auto-configuration:** Automatically configures the broker, template, and listeners.
 
 ## Usage Guide
