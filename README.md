@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/TornovDutta/awesome-kafka.svg)](https://jitpack.io/#TornovDutta/awesome-kafka)
 
-A lightweight, in-memory event broker that simulates Kafka's core concepts (publish/subscribe to topics) without requiring any external infrastructure. 
+A lightweight event broker that simulates Kafka's core concepts (publish/subscribe to topics) with persistent storage, without requiring any external infrastructure.
 
 This project is built as a **Spring Boot Starter**. Other users can include it in their project and start using it immediately. **Zero configuration required!**
 
@@ -38,6 +38,7 @@ Next, add the `awesome-kafka` dependency:
 ---
 
 ## Features
+- **Topic Support:** Logical segregation of messages by topic name, allowing consumers to subscribe to specific streams of interest.
 - **Persistent Disk Logs:** Messages are stored in append-only log files (`minikafka-data/`) for durability, surviving application restarts.
 - **Offsets & Replayability:** Consumers track their byte offsets and read from the log, allowing them to replay historical messages.
 - **Asynchronous Polling:** Dedicated background threads continuously poll for new messages decoupled from the producer.
